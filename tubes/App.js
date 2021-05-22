@@ -1,121 +1,38 @@
-import React, { Component } from 'react'
-import { Text, TextInput, View, Button, SafeAreaView, ScrollView, StatusBar } from 'react-native'
-import { style } from './Style'
+import React from 'react'
+import { View, Text, Button, TouchableOpacity} from 'react-native'
 
+import 'react-native-gesture-handler';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { StackNavigator } from 'react-navigation';
 
-class home extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            uang:'',
-            keterangan:'',
-            listData:[],
-            idEdit:null,
-        };
-        this.url = "http://192.168.43.217/api/api.php"
-    }
-    componentDidMount(){
-       this.ambilListData()
-    }
-    async ambilListData(){
-        await fetch(this.url)
-        .then((response)=>response.json())
-        .then((json)=>{
-            console.log('hasil yang didapat: '+JSON.stringify(json.data.result));
-            this.setState({listData:json.data.result});
-        })
-        .catch((error)=>{
-           console.log(error); 
-        })
-    }
-    klikSimpan(){
-        if(this.state.nama == '' || this.state.alamat == ''){
-          alert('Silakan masukkan uang dan keterangan');
-        }else{
-            if(this.state.idEdit){
-              var urlAksi = this.url+"/?op=update&id="+this.state.idEdit;
-            }else{
-              var urlAksi = this.url+"/?op=create";
-            }
-            
-  
-            fetch(urlAksi,{
-                method:'post',
-                headers:{
-                    'Content-Type':'application/x-www-form-urlencoded'
-                },
-                body:"uang="+this.state.uang+"&keterangan="+this.state.keterangan
-            })
-            .then((response)=>response.json())
-            .then((json)=>{
-                this.setState({uang:''});
-                this.setState({keterangan:''});
-                this.ambilListData();
-            })
-        }
-    }
-    async klikEdit(id){
-        await fetch(this.url+"/?op=detail&id="+id)
-        .then((response)=>response.json())
-        .then((json)=>{
-            this.setState({uang:json.data.result[0].uang});
-            this.setState({keterangan:json.data.result[0].keterangan})
-            this.setState({idEdit:id})
-        })
-      }
-      async klikDelete(id){
-        await fetch(this.url+"/?op=delete&id="+id)
-        .then((response)=>response.json())
-        .then((json)=>{
-            alert('Data berhasil didelete');
-            this.ambilListData();
-        })
-        .catch((error)=>{
-            console.log(error)
-        })
-      }
-    render() {
-        return (
-            <View style={style.viewWrapper}>
-                <View style={style.viewData}>
-                    {
-                        this.state.listData.map((val,index)=>(
-                            <View style={style.viewList} key=
-                            {index}>
-                               <Text style={style.textListUang}
-                               >{val.uang}</Text>
-                               <Text style={style.textListUang}>{val.keterangan}</Text>
-                               <Text style={style.textListUang}>{val.tgl_input}</Text> 
-                               <Text style={style.textListEdit} onPress={()=>this.klikEdit(val.id)}>edit</Text>
-                               <Text style={style.textListDelete} onPress={()=>this.klikDelete(val.id)}>Delete</Text>
-                            </View>
-                        ))
-                    }
-                </View>
-                <View style={style.viewForm}>
-                    <TextInput
-                        style={style.textInput}
-                        placeholder="masukkan jumlah uang"
-                        value={this.state.uang}
-                        onChangeText={(text)=>this.setState({uang:text})}
+import pemasukan from './pemasukan';
+import pengeluaran from './pengeluaran';
 
-                        >
-                    </TextInput>
-                    <TextInput
-                        style={style.textInput}
-                        placeholder="keterangan"
-                        value={this.state.keterangan}
-                        onChangeText={(text)=>this.setState({keterangan:text})}
-                    ></TextInput>
-                    <Button 
-                    title="masukkan data"
-                    onPress={()=>this.klikSimpan()}>
+const Stack = createStackNavigator();
 
-                    </Button>
-                </View>
-            </View>
-        )
-    }
+export default function App({Navigation}) {
+
+    return (
+        
+        <NavigationContainer>
+            <Stack.Navigator>
+                <Stack.Screen name="PEMASUKAN" component={pemasukan}/>
+                <Stack.Screen name="PENGELUARAN" component={pengeluaran}/>                   
+            </Stack.Navigator>
+            <TouchableOpacity
+                onPress={()=> {this.props.navigation.navigate("PENGELUARAN")}}>
+                <Text>Pengeluaran</Text>    
+            </TouchableOpacity>
+            {/* <Button
+                title="pemasukan"
+                onPress={()=>Navigation.navigate('UangMasuk')}></Button>
+            <Button
+                title="pengeluaran"
+                onPress={()=>Navigation.navigate('UangKeluar')}></Button> */}
+           
+        </NavigationContainer>
+        
+    );
 }
 
-export default home
